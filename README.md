@@ -178,6 +178,10 @@ Since DV includes domestic violence between married couples, it does not transla
 
 Unlike Japan, Korean people do not change their family name upon marriage, so all templates including the cultural context of changing their family name had to be changed. Until recently, it was culturally expected of the bride to prepare the furniture and home appliances, and the groom to prepare the residence. Therefore all template regarding name-changing was changed to "혼수마련" to test the cultural background of the bride preparing the furniture.
 
+## Potential Improvements
+
+In the original dataset, all parties were referred to as their family name (`{name1}さん`), as is typical in Japanese culture. However, when directly translated to Korean (`{name1}씨`), this does not feel very natural as it is not a very common way to refer to people in Korean culture. For now, it is left as-is, since we don't consider it to affect the end result too much, and to maintain as much one-to-one comparison to the original Japanese dataset as possible. But to make the text feel more natural, replacing the family name with the entire name (`김씨` -> `김희수`) or just using the first name (`김씨` -> `희수`) is an option.
+
 ## Paper Reference
 
 For more information about the SOBACO dataset and its evaluation methodology, please refer to the original paper:

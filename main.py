@@ -78,15 +78,15 @@ def construct(template, names, idks):
 if __name__ == '__main__':
     import json
     
-    with open('ko_templates.json', 'r') as fp:
+    with open('ko_template.json', 'r') as fp:
         ko_templates = json.load(fp)
     all_rows = []
     for template in ko_templates:
-        all_rows.extend(_generate_rows(template, NAMES, KO_IDK_OPTIONS))
+        all_rows.extend(_generate_rows(template, KO_NAMES, KO_IDK_OPTIONS))
     df = pd.DataFrame(all_rows)
     df.to_csv('ko_dataset.csv', index=False)
     
-    with open('templates.json', 'r') as fp:
+    with open('template.json', 'r') as fp:
         templates = json.load(fp)
     all_rows = []
     for template in templates:

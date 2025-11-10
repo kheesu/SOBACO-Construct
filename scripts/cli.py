@@ -2,33 +2,50 @@
 """Command-line interface for SOBACO dataset generation."""
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from config import LANGUAGES, GENERATED_DATA_DIR, get_names, get_idk_options, CATEGORIES
+from config import LANGUAGES, GENERATED_DATA_DIR, RAW_DATA_DIR, get_names, get_idk_options, CATEGORIES
+
+
+def load_templates(language: str):
+    """Load templates from JSON file for specified language."""
+    template_map = {
+        "ja": "ja_templates.json",
+        "ja-ko": "ko_templates.json",
+        "ja-zh": "zh_templates.json"
+    }
+    
+    if language not in template_map:
+        return None
+    
+    template_file = RAW_DATA_DIR / template_map[language]
+    
+    if not template_file.exists():
+        print(f"Error: Template file not found: {template_file}")
+        return None
+    
+    try:
+        with open(template_file, 'r', encoding='utf-8') as f:
+            templates = json.load(f)
+        return templates
+    except Exception as e:
+        print(f"Error loading templates: {e}")
+        return None
 
 
 def generate_dataset(language: str, output: str = None):
     """Generate dataset for specified language."""
     print(f"Generating {language} dataset...")
     
-    # Import generator
-    from generator import construct
-    
-    # Select templates based on language
-    if language == "ja":
-        from templates.ja_templates import templates
-    elif language == "ja-ko":
-        from templates.ko_templates import ko_templates as templates
-    elif language == "ja-zh":
-        # TODO: Add Chinese templates when available
-        print(f"Error: Chinese templates not yet implemented")
-        return
-    else:
-        print(f"Error: Language '{language}' not supported")
+    # Load templates from JSON
+    templates = load_templates(language)
+    if templates is None:
+        print(f"Error: Could not load templates for language '{language}'")
         print(f"Supported languages: {', '.join(LANGUAGES)}")
         return
     
@@ -109,17 +126,20 @@ def list_templates(language: str = None, category: str = None):
     print(f"  Filter - Language: {language or 'all'}, Category: {category or 'all'}")
     print()
     
-    # Import templates
-    from templates.ja_templates import templates as ja_templates
-    from templates.ko_templates import ko_templates
-    
-    language_templates = {
-        "ja": ("Japanese", ja_templates),
-        "ja-ko": ("Korean", ko_templates),
+    # Load templates from JSON files
+    language_names = {
+        "ja": "Japanese",
+        "ja-ko": "Korean",
+        "ja-zh": "Chinese"
     }
     
-    for lang_code, (lang_name, templates) in language_templates.items():
+    for lang_code, lang_name in language_names.items():
         if language and language != lang_code:
+            continue
+        
+        templates = load_templates(lang_code)
+        if templates is None:
+            print(f"{lang_name} ({lang_code}): Template file not found")
             continue
             
         print(f"{lang_name} ({lang_code}): {len(templates)} templates")
@@ -139,7 +159,7 @@ def list_templates(language: str = None, category: str = None):
 
 def show_info():
     """Show repository information."""
-    from config import ROOT_DIR, DATA_DIR, TEMPLATES_DIR
+    from config import ROOT_DIR, DATA_DIR
     
     print("=" * 60)
     print("SOBACO Dataset Constructor")
@@ -148,20 +168,26 @@ def show_info():
     print("Configuration:")
     print(f"  Root directory: {ROOT_DIR}")
     print(f"  Data directory: {DATA_DIR}")
-    print(f"  Templates directory: {TEMPLATES_DIR}")
+    print(f"  Raw data (templates): {RAW_DATA_DIR}")
+    print(f"  Generated data: {GENERATED_DATA_DIR}")
     print()
     print("Supported languages:")
     for lang in LANGUAGES:
         names = get_names(lang)
         idk_count = len(get_idk_options(lang))
-        print(f"  - {lang}: {len(names)} names, {idk_count} IDK options")
+        templates = load_templates(lang)
+        template_count = len(templates) if templates else 0
+        status = "✓" if templates else "✗"
+        print(f"  {status} {lang}: {len(names)} names, {idk_count} IDK options, {template_count} templates")
     print()
     print("Categories:")
     for cat in CATEGORIES:
         print(f"  - {cat}")
     print()
-    print("Output directory:")
-    print(f"  {GENERATED_DATA_DIR}")
+    print("Template files:")
+    template_files = list(RAW_DATA_DIR.glob("*.json"))
+    for tf in sorted(template_files):
+        print(f"  - {tf.name}")
     print("=" * 60)
 
 

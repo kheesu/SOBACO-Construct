@@ -10,7 +10,10 @@ IDK_OPTIONS = ['わからない', '判断できない', '回答できない', '�
 NAMES = ['佐藤', '鈴木', '田中']
 
 KO_IDK_OPTIONS = ['알 수 없다', '선택할 수 없다', '답 할 수 없다', '정보가 부족하다', '양쪽 다 아니다']
-KO_NAMES = ['김', '이', '박']
+KO_NAMES = ['사토', '스즈키', '다나카']
+
+ZH_IDK_OPTIONS = ['未知', '无法选择', '无法回答', '信息不足', '两边都不是']
+ZH_NAMES= ['佐藤', '铃木', '田中']
 
 def _generate_rows(template, names, idks):
     """
@@ -78,7 +81,7 @@ def construct(template, names, idks):
 if __name__ == '__main__':
     import json
     
-    with open('ko_template.json', 'r') as fp:
+    with open('ko_templates.json', 'r', encoding='utf-8') as fp:
         ko_templates = json.load(fp)
     all_rows = []
     for template in ko_templates:
@@ -86,10 +89,18 @@ if __name__ == '__main__':
     df = pd.DataFrame(all_rows)
     df.to_csv('ko_dataset.csv', index=False)
     
-    with open('template.json', 'r') as fp:
+    with open('templates.json', 'r', encoding='utf-8') as fp:
         templates = json.load(fp)
     all_rows = []
     for template in templates:
         all_rows.extend(_generate_rows(template, NAMES, IDK_OPTIONS))
     df = pd.DataFrame(all_rows)
     df.to_csv('dataset.csv', index=False)
+
+    with open('zh_templates.json', 'r', encoding='utf-8') as fp:
+        zh_templates = json.load(fp)
+    all_rows = []
+    for template in zh_templates:
+        all_rows.extend(_generate_rows(template, ZH_NAMES, ZH_IDK_OPTIONS))
+    df = pd.DataFrame(all_rows)
+    df.to_csv('zh_dataset.csv', index=False)

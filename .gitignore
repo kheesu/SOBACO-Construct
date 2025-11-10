@@ -48,6 +48,16 @@ coverage.xml
 *.cover
 *.py.cover
 .hypothesis/
+
+# Generated data files
+data/generated/*.csv
+data/generated/*.json
+
+# Temporary files
+*.tmp
+*.bak
+*~
+.DS_Store
 .pytest_cache/
 cover/
 

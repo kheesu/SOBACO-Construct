@@ -1,12 +1,85 @@
 # SOBACO Dataset Constructor
 
-This project reconstructs and generates the templates used for the SOBACO dataset proposed by the paper "Bias Mitigation or Cultural Commonsense? Evaluating LLMs with a Japanese Dataset".
+This project constructs and generates templates for the SOBACO (Social Bias and Cultural Commonsense) dataset proposed in the paper "Bias Mitigation or Cultural Commonsense? Evaluating LLMs with a Japanese Dataset".
+
+## Table of Contents
+
+- [Quick Start](#-quick-start)
+- [Project Structure](#-project-structure)
+- [Overview](#overview)
+- [How It Works](#how-it-works)
+- [Usage](#usage)
+- [Multi-Language Support](#-multi-language-support)
+- [Development](#-development)
+- [Migration Guide](#-migration-guide)
+- [Common Tasks](#-common-tasks)
+- [Troubleshooting](#-troubleshooting)
+- [Paper Reference](#paper-reference)
+
+## 🚀 Quick Start
+
+### Installation
+
+Using UV (recommended):
+```bash
+uv sync
+```
+
+Using pip:
+```bash
+pip install -e .
+```
+
+### Generate Datasets
+
+```bash
+# Japanese dataset
+python scripts/cli.py generate -l ja
+
+# Korean dataset
+python scripts/cli.py generate -l ko
+
+# With custom output
+python scripts/cli.py generate -l ja -o data/generated/custom.csv
+
+# Show repository info
+python scripts/cli.py info
+```
+
+## 📁 Project Structure
+
+```
+constructor/
+├── src/                          # Source code
+│   ├── __init__.py              # Package initialization
+│   ├── config.py                # Configuration settings
+│   ├── generator.py             # Dataset generation logic
+│   └── templates/               # Template definitions
+│       ├── __init__.py
+│       ├── ja_templates.py      # Japanese templates (66 templates)
+│       └── ko_templates.py      # Korean templates (66 templates)
+├── data/                        # Data files
+│   ├── raw/                     # Raw template exports and translation files
+│   │   ├── ja_templates.json
+│   │   ├── ko_templates.json
+│   │   ├── zh_templates.json
+│   │   └── jp_translate.csv
+│   └── generated/               # Generated datasets
+│       ├── ja_dataset.csv
+│       ├── ko_dataset.csv
+│       └── zh_dataset.csv
+├── scripts/                     # Utility scripts
+│   ├── cli.py                   # Command-line interface
+│   └── translate.py             # Translation utilities
+├── pyproject.toml              # Project configuration
+└── README.md                   # This file
+```
 
 ## Overview
 
-SOBACO (Social Bias and Cultural Commonsense) is a dataset designed to evaluate how well Large Language Models distinguish between stereotypical biases and legitimate cultural commonsense reasoning. This repository provides the template construction system to generate the dataset in both Japanese and Korean.
+SOBACO (Social Bias and Cultural Commonsense) is a dataset designed to evaluate how well Large Language Models distinguish between stereotypical biases and legitimate cultural commonsense reasoning. This repository provides the template construction system to generate the dataset in multiple languages.
 
-## Dataset Description
+### Dataset Description
 
 According to Appendix C of the paper, each template populates the dataset by 36, 72, or 108 samples, depending on the number of parameters (context types) in the expressions:
 
@@ -14,48 +87,27 @@ According to Appendix C of the paper, each template populates the dataset by 36,
 - **72 samples**: Templates with 2 parameter variations
 - **108 samples**: Templates with 3 parameter variations
 
-## Repository Structure
+### Template Structure
 
-```
-.
-├── main.py              # Dataset construction script
-├── templates.py         # 66 Japanese language templates
-├── ko_template.py       # 66 Korean language templates
-├── template.json        # Exported Japanese templates
-├── ko_template.json     # Exported Korean templates
-├── pyproject.toml       # Project dependencies
-├── uv.lock             # UV package manager lock file
-├── .python-version     # Python version specification (3.12)
-├── .gitignore          # Git ignore patterns
-└── README.md           # This file
-```
+Each of the 66 templates contains:
+- **`context`**: Base context with placeholders `{name1}`, `{name2}`, and `{param}`
+- **`question`**: The question to be answered
+- **`category`**: Category (e.g., `hierarchical_relationship`, `gender`, `age`)
+- **`sample_idx`**: Template index (1-66)
+- **`param`**: List of parameter variations (empty list if no parameters)
+- **`additional_context_bias`**: Additional context that introduces stereotypical bias
+- **`additional_context_culture`**: Additional context with legitimate cultural information
+- **`biased_option_template`**: Expected biased answer template
+- **`answer_template`**: Correct answer template
 
-## Files Description
+### Key Files
 
-### `templates.py`
-Contains 66 Japanese templates (template1 through template66) with the following structure:
-- `context`: Base context with placeholders `{name1}`, `{name2}`, and `{param}`
-- `question`: The question to be answered
-- `category`: Category of the question (e.g., 'hierarchical_relationship')
-- `sample_idx`: Template index (1-66)
-- `param`: List of parameter variations (empty list if no parameters)
-- `additional_context_bias`: Additional context that introduces stereotypical bias
-- `additional_context_culture`: Additional context with legitimate cultural information
-- `biased_option_template`: Expected biased answer template
-- `answer_template`: Correct answer template
-
-### `ko_template.py`
-Contains the same 66 templates translated into Korean, maintaining the same structure and logic.
-
-### `main.py`
-Dataset construction script featuring:
-- Permutation-based data generation from templates
-- Support for both Japanese and Korean templates
-- Constants for names and "I don't know" options
-- Generates CSV datasets from templates
-
-### `template.json` and `ko_template.json`
-Pre-exported JSON files containing all 66 templates for Japanese and Korean respectively. These files are generated by running the template scripts directly.
+- **`src/templates/ja_templates.py`**: 66 Japanese templates
+- **`src/templates/ko_templates.py`**: 66 Korean templates  
+- **`src/generator.py`**: Dataset generation logic
+- **`src/config.py`**: Configuration (names, languages, paths)
+- **`data/raw/*.json`**: Pre-exported template JSON files
+- **`data/generated/*.csv`**: Generated dataset files
 
 ## How It Works
 
@@ -89,78 +141,220 @@ Each generated sample contains:
 
 ## Usage
 
-### Generate Datasets
-
-Run the main construction script to generate the dataset:
+### Command-Line Interface
 
 ```bash
-python main.py
+# Generate datasets
+python scripts/cli.py generate -l ja           # Japanese
+python scripts/cli.py generate -l ko           # Korean
+python scripts/cli.py generate -l zh           # Chinese
+
+# Custom output location
+python scripts/cli.py generate -l ja -o data/generated/custom.csv
+
+# Show repository information
+python scripts/cli.py info
+
+# List available templates
+python scripts/cli.py list
 ```
 
-This will create `dataset.csv` with the generated Japanese dataset.
-
-### Use as a Module
+### Use as a Python Module
 
 ```python
-from main import construct
-from templates import templates
+from src.templates import ja_templates, ko_templates
+from src.config import LANGUAGES, NAMES, get_names
+from src.generator import construct
 
-# Define names to use
-names = ['佐藤', '鈴木', '田中']
+# Get names for a language
+names = get_names('ja')  # ['佐藤', '鈴木', '田中']
 
 # Generate data for a single template
-data = construct(templates[0])
+data = construct(ja_templates[0])
+
+# Access configuration
+print(LANGUAGES)  # ['ja', 'ko', 'zh']
 ```
 
 ### Export Templates to JSON
 
-The templates have already been exported to JSON files (`template.json` and `ko_template.json`). To regenerate them:
+Templates are pre-exported in `data/raw/`. To regenerate:
 
 ```bash
 # Export Japanese templates
-python templates.py
+python src/templates/ja_templates.py
 
 # Export Korean templates
-python ko_template.py
+python src/templates/ko_templates.py
 ```
+
+### Translation Workflow
+
+Use the translation script to apply bulk replacements from a CSV file:
+
+```bash
+python scripts/translate.py
+```
+
+CSV format: 3 columns (target, replacement1, replacement2). The script generates two output files with each replacement applied.
 
 ## Requirements
 
-- Python >= 3.12
-- pandas >= 2.3.3
+- **Python** >= 3.12
+- **pandas** >= 2.3.3
 
-Install dependencies using pip:
+### Installation Options
+
 ```bash
+# Using UV (recommended)
+uv sync
+
+# Using pip
+pip install -e .
+
+# Install just pandas
 pip install pandas
 ```
 
-Or install the project with its dependencies:
-```bash
-pip install -e .
+## ✨ Key Features
+
+- ✅ **Multi-Language Support**: Japanese, Korean, and Chinese templates
+- ✅ **Bias vs Culture Distinction**: Each template generates both biased and culturally informed contexts
+- ✅ **Systematic Coverage**: Exhaustive permutations ensure comprehensive evaluation
+- ✅ **Reproducibility**: Fixed random seed (42) for consistent "I don't know" option selection
+- ✅ **Modern Package Management**: Uses UV for fast, reliable dependency management
+- ✅ **Pre-exported Templates**: JSON files included for easy integration
+- ✅ **Organized Structure**: Clean separation of source, data, and scripts
+- ✅ **CLI Interface**: Command-line tools for common tasks
+
+## 🔧 Development
+
+### Adding New Templates
+
+1. Edit `src/templates/ja_templates.py` or `ko_templates.py`
+2. Follow the existing template structure
+3. Add template to the `templates` or `ko_templates` list
+4. Regenerate datasets
+
+### Adding a New Language
+
+1. **Create template file**: `src/templates/XX_templates.py`
+2. **Update config** (`src/config.py`):
+   ```python
+   LANGUAGES = ["ja", "ko", "zh", "XX"]  # Add language code
+   NAMES["XX"] = ['Name1', 'Name2', 'Name3']  # Add names
+   IDK_OPTIONS["XX"] = ['IDK1', 'IDK2', ...]  # Add IDK options
+   ```
+3. **Update template package** (`src/templates/__init__.py`):
+   ```python
+   from .XX_templates import XX_templates
+   __all__ = [..., "XX_templates"]
+   ```
+4. **Generate and test** the new dataset
+
+### Project Organization Benefits
+
+- **Clear Separation**: Source code in `src/`, data in `data/`, scripts in `scripts/`
+- **Easy Navigation**: Logical directory hierarchy with consistent naming
+- **Scalability**: Simple to add new languages, templates, or features
+- **Maintainability**: Related files grouped together, centralized configuration
+- **Professional**: Follows Python packaging best practices
+
+### Recommended Improvements
+
+1. **Add Unit Tests**: Create `tests/` directory with pytest
+2. **Add Type Hints**: Use mypy for static type checking
+3. **Improve CLI**: Add progress bars, verbose mode, validation commands
+4. **Add Documentation**: API docs, template creation guide, examples
+5. **CI/CD Pipeline**: GitHub Actions for automated testing and linting
+6. **Convert to YAML**: Move template data to YAML files for easier editing
+
+## 🔄 Migration Guide
+
+If you have existing code using the old structure:
+
+### Old Import Paths ❌
+```python
+from templates import templates
+from ko_template import ko_templates
+import main
 ```
 
-### Using UV (Recommended)
-
-This project uses [UV](https://github.com/astral-sh/uv) for package management. To set up the environment:
-
-```bash
-# Install dependencies
-uv sync
-
-# Run the script
-uv run python main.py
+### New Import Paths ✅
+```python
+from src.templates import ja_templates, ko_templates
+from src.config import LANGUAGES, NAMES
+from src.generator import construct
 ```
 
-## Key Features
+### File Location Changes
 
-- **Dual Language Support**: Both Japanese and Korean templates
-- **Bias vs Culture Distinction**: Each template generates both biased and culturally informed contexts
-- **Systematic Coverage**: Exhaustive permutations ensure comprehensive evaluation
-- **Reproducibility**: Fixed random seed (42) for consistent "I don't know" option selection
-- **Modern Package Management**: Uses UV for fast, reliable dependency management
-- **Pre-exported Templates**: JSON files included for easy integration
+| Old Location | New Location |
+|-------------|--------------|
+| `templates.py` | `src/templates/ja_templates.py` |
+| `ko_template.py` | `src/templates/ko_templates.py` |
+| `main.py` | `src/generator.py` |
+| `templates.json` | `data/raw/ja_templates.json` |
+| `dataset.csv` | `data/generated/ja_dataset.csv` |
 
-## Translation Notes
+All original files preserved in new locations. No data or functionality lost.
+
+## 📋 Common Tasks
+
+### Export Templates
+```bash
+python src/templates/ja_templates.py  # Creates data/raw/ja_templates.json
+python src/templates/ko_templates.py  # Creates data/raw/ko_templates.json
+```
+
+### Generate Datasets
+```bash
+python scripts/cli.py generate -l ja  # Japanese
+python scripts/cli.py generate -l ko  # Korean  
+```
+
+### Apply Translations
+```bash
+# Prepare CSV: target, replacement1, replacement2
+python scripts/translate.py
+```
+
+### Check Configuration
+```python
+from src.config import LANGUAGES, NAMES, IDK_OPTIONS
+print(f"Languages: {LANGUAGES}")
+print(f"Japanese names: {NAMES['ja']}")
+```
+
+## 🆘 Troubleshooting
+
+### Import Errors
+**Problem**: `ModuleNotFoundError: No module named 'templates'`  
+**Solution**: Update import paths to use new structure:
+```python
+from src.templates import ja_templates
+```
+
+### Can't Find Files
+**Problem**: Files not in expected locations  
+**Solution**: Check new locations:
+- Templates: `src/templates/`
+- Raw data: `data/raw/`
+- Generated data: `data/generated/`
+- Scripts: `scripts/`
+
+### CLI Not Working
+**Problem**: `python cli.py` fails  
+**Solution**: Run from project root with full path:
+```bash
+python scripts/cli.py generate -l ja
+```
+
+### UTF-8 Encoding Errors
+**Problem**: `UnicodeEncodeError` when exporting JSON  
+**Solution**: Already fixed! All file operations now use `encoding='utf-8'`
+
+## 🌐 Translation Notes
 
 Several Japanese culture-specific templates had to be rewritten in order to make the dataset effective for Korean culture.
 
@@ -178,9 +372,21 @@ Since DV includes domestic violence between married couples, it does not transla
 
 Unlike Japan, Korean people do not change their family name upon marriage, so all templates including the cultural context of changing their family name had to be changed. Until recently, it was culturally expected of the bride to prepare the furniture and home appliances, and the groom to prepare the residence. Therefore all template regarding name-changing was changed to "혼수마련" to test the cultural background of the bride preparing the furniture.
 
-## Potential Improvements
+### Potential Improvements
 
 In the original dataset, all parties were referred to as their family name (`{name1}さん`), as is typical in Japanese culture. However, when directly translated to Korean (`{name1}씨`), this does not feel very natural as it is not a very common way to refer to people in Korean culture. For now, it is left as-is, since we don't consider it to affect the end result too much, and to maintain as much one-to-one comparison to the original Japanese dataset as possible. But to make the text feel more natural, replacing the family name with the entire name (`김씨` -> `김희수`) or just using the first name (`김씨` -> `희수`) is an option.
+
+## 📄 License
+
+Please refer to the original SOBACO dataset paper and repository for licensing information.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please ensure:
+- New templates follow the existing structure
+- Cultural adaptations are well-documented
+- Code follows project conventions
+- Tests pass (when implemented)
 
 ## Paper Reference
 

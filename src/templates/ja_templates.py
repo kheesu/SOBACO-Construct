@@ -809,5 +809,5 @@ templates = [
 
 if __name__ == '__main__':
     import json
-    with open('template.json', 'w') as fp:
-        json.dump(templates, fp)
+    with open('template.json', 'w', encoding='utf-8') as fp:
+        json.dump(templates, fp, ensure_ascii=False, indent=4)

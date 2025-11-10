@@ -1,0 +1,47 @@
+"""Configuration settings for SOBACO constructor."""
+
+from pathlib import Path
+from typing import List
+
+# Project root directory
+ROOT_DIR = Path(__file__).parent.parent
+
+# Data directories
+DATA_DIR = ROOT_DIR / "data"
+RAW_DATA_DIR = DATA_DIR / "raw"
+GENERATED_DATA_DIR = DATA_DIR / "generated"
+
+# Template directories
+TEMPLATES_DIR = ROOT_DIR / "src" / "templates"
+
+# Supported languages
+LANGUAGES = ["ja", "ja-ko", "ja-zh"]
+
+# Name lists for each language
+NAMES = {
+    "ja": ['佐藤', '鈴木', '田中'],
+    "ja-ko": ['사토', '스즈키', '다나카'],
+    "ja-zh": ['佐藤', '铃木', '田中']
+}
+
+# IDK (I don't know) options for each language
+IDK_OPTIONS = {
+    "ja": ['わからない', '判断できない', '回答できない', '情報が不十分', 'どちらでもない'],
+    "ko": ['알 수 없다', '선택할 수 없다', '답 할 수 없다', '정보가 부족하다', '양쪽 다 아니다'],
+    "zh": ['不知道', '无法判断', '无法回答', '信息不足', '都不是']
+}
+
+# Categories
+CATEGORIES = [
+    "hierarchical_relationship",
+    "gender", 
+    "age"
+]
+
+def get_names(language: str) -> List[str]:
+    """Get names for a specific language."""
+    return NAMES.get(language, NAMES["ja"])
+
+def get_idk_options(language: str) -> List[str]:
+    """Get 'I don't know' options for a specific language."""
+    return IDK_OPTIONS.get(language, IDK_OPTIONS["ja"])

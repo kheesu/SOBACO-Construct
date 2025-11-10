@@ -9,7 +9,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from config import LANGUAGES, GENERATED_DATA_DIR, RAW_DATA_DIR, get_names, get_idk_options, CATEGORIES
+from config import LANGUAGES, GENERATED_DATA_DIR, RAW_DATA_DIR, get_names, get_idk_options
 
 
 def load_templates(language: str):
@@ -57,8 +57,22 @@ def generate_dataset(language: str, output: str = None):
     print(f"  IDK options: {len(idk_options)} variants")
     print(f"  Templates: {len(templates)} total")
     
-    # Generate dataset
-    # TODO: Add generation logic here
+    # Import generator function
+    from generator import _generate_rows
+    import pandas as pd
+    
+    # Generate all rows from all templates
+    print(f"  Generating rows...")
+    all_rows = []
+    for i, template in enumerate(templates, 1):
+        if i % 10 == 0:
+            print(f"    Processing template {i}/{len(templates)}...")
+        all_rows.extend(_generate_rows(template, names, idk_options))
+    
+    print(f"  Total rows generated: {len(all_rows)}")
+    
+    # Create DataFrame
+    df = pd.DataFrame(all_rows)
     
     # Determine output path
     if output is None:
@@ -66,8 +80,16 @@ def generate_dataset(language: str, output: str = None):
     else:
         output = Path(output)
     
-    print(f"✓ Generated dataset for {language}")
-    print(f"✓ Would save to {output}")
+    # Ensure output directory exists
+    output.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Save to CSV
+    print(f"  Saving to: {output}")
+    df.to_csv(output, index=False, encoding='utf-8')
+    
+    print(f"✓ Dataset generated successfully!")
+    print(f"  Rows: {len(df)}")
+    print(f"  Columns: {list(df.columns)}")
 
 
 def main():
@@ -99,11 +121,6 @@ def main():
         choices=LANGUAGES,
         help="Filter by language"
     )
-    list_parser.add_argument(
-        "--category", "-c",
-        choices=CATEGORIES,
-        help="Filter by category"
-    )
     
     # Info command
     info_parser = subparsers.add_parser("info", help="Show repository information")
@@ -113,17 +130,17 @@ def main():
     if args.command == "generate":
         generate_dataset(args.language, args.output)
     elif args.command == "list":
-        list_templates(args.language, getattr(args, 'category', None))
+        list_templates(args.language)
     elif args.command == "info":
         show_info()
     else:
         parser.print_help()
 
 
-def list_templates(language: str = None, category: str = None):
+def list_templates(language: str = None):
     """List available templates with optional filtering."""
     print("Available templates:")
-    print(f"  Filter - Language: {language or 'all'}, Category: {category or 'all'}")
+    print(f"  Filter - Language: {language or 'all'}")
     print()
     
     # Load templates from JSON files
@@ -143,17 +160,6 @@ def list_templates(language: str = None, category: str = None):
             continue
             
         print(f"{lang_name} ({lang_code}): {len(templates)} templates")
-        
-        # Count by category
-        category_counts = {}
-        for template in templates:
-            cat = template.get('category', 'unknown')
-            category_counts[cat] = category_counts.get(cat, 0) + 1
-        
-        for cat, count in sorted(category_counts.items()):
-            if category and category != cat:
-                continue
-            print(f"  - {cat}: {count} templates")
         print()
 
 
@@ -179,10 +185,6 @@ def show_info():
         template_count = len(templates) if templates else 0
         status = "✓" if templates else "✗"
         print(f"  {status} {lang}: {len(names)} names, {idk_count} IDK options, {template_count} templates")
-    print()
-    print("Categories:")
-    for cat in CATEGORIES:
-        print(f"  - {cat}")
     print()
     print("Template files:")
     template_files = list(RAW_DATA_DIR.glob("*.json"))

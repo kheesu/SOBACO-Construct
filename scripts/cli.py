@@ -17,7 +17,10 @@ def load_templates(language: str):
     template_map = {
         "ja": "ja_templates.json",
         "ja-ko": "ko_templates.json",
-        "ja-zh": "zh_templates.json"
+        "ja-zh": "zh_templates.json",
+        "ko": "ko-ko_templates.json",
+        "ko-jp": "ko-jp_templates.json",
+        "ko-zh": "ko-zh_templates.json"
     }
     
     if language not in template_map:

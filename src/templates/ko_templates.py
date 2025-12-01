@@ -808,5 +808,5 @@ ko_templates = [
 
 if __name__ == '__main__':
     import json
-    with open('ko_template.json', 'w') as fp:
-        json.dump(ko_templates, fp)
+    with open('ko_template.json', 'w', encoding='utf8') as fp:
+        json.dump(ko_templates, fp, ensure_ascii=False, indent=4)

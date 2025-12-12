@@ -15,7 +15,7 @@ GENERATED_DATA_DIR = DATA_DIR / "generated"
 TEMPLATES_DIR = ROOT_DIR / "src" / "templates"
 
 # Supported languages
-LANGUAGES = ["ja", "ja-ko", "ja-zh", "ko", "ko-jp", "ko-zh"]
+LANGUAGES = ["ja", "ja-ko", "ja-zh", "ko", "ko-jp", "ko-zh", "zh", "zh-ko", "zh-ja"]
 
 # Name lists for each language
 NAMES = {
@@ -24,7 +24,10 @@ NAMES = {
     "ja-zh": ['佐藤', '铃木', '田中'],
     "ko": ['김', '이', '박'],
     "ko-jp": ["キム", "イ", "パク"],
-    "ko-zh": ["金", "李", "朴"]
+    "ko-zh": ["金", "李", "朴"],
+    "zh": ['小张', '小李', '小王'],
+    "zh-ko": ['장씨', '리씨', '왕씨'],
+    "zh-ja": ['ジャンさん', 'リさん', 'ワンさん']
 }
 
 # IDK (I don't know) options for each language
@@ -34,7 +37,10 @@ IDK_OPTIONS = {
     "ja-zh": ['不知道', '无法判断', '无法回答', '信息不足', '都不是'],
     "ko": ['알 수 없다', '선택할 수 없다', '답 할 수 없다', '정보가 부족하다', '양쪽 다 아니다'],
     "ko-jp": ['わからない', '判断できない', '回答できない', '情報が不十分', 'どちらでもない'],
-    "ko-zh": ['不知道', '无法判断', '无法回答', '信息不足', '都不是']
+    "ko-zh": ['不知道', '无法判断', '无法回答', '信息不足', '都不是'],
+    "zh": ['无法判断', '不清楚', '无法回答', '信息不足', '都不是'],
+    "zh-ko": ['알 수 없다', '선택할 수 없다', '답 할 수 없다', '정보가 부족하다', '양쪽 다 아니다'],
+    "zh-ja": ['わからない', '判断できない', '回答できない', '情報が不十分', 'どちらでもない']
 }
 
 # Categories

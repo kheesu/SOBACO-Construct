@@ -22,7 +22,20 @@ def parse_mapping_file(mapping_file):
                 # Extract section name between the --- markers
                 end_marker = line.index('---', 3) + 3
                 section_text = line[3:end_marker-3].strip()
-                current_section = section_text.lower()
+                # Normalize: lowercase, remove spaces, handle plurals and special cases
+                normalized = section_text.lower().replace(' ', '_').replace('-', '_')
+                # Handle common variations
+                if normalized == 'contexts':
+                    normalized = 'context'
+                elif normalized == 'questions':
+                    normalized = 'question'
+                elif normalized == 'parameters':
+                    normalized = 'param'
+                elif normalized == 'additional_context___bias':
+                    normalized = 'additional_context_bias'
+                elif normalized == 'additional_context___culture':
+                    normalized = 'additional_context_culture'
+                current_section = normalized
                 sections[current_section] = []
             elif line and '\t' in line and current_section:
                 # Parse translation pair

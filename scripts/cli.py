@@ -85,7 +85,10 @@ def load_templates(language: str):
         "zh": "zh_standard_templates.json",
         "zh-csv": "c_sobaco_templates.csv",
         "zh-ja": "zh-ja_templates.json",
-        "zh-ko": "zh-ko_templates.json"
+        "zh-ko": "zh-ko_templates.json",
+        "ko-v2": "ko_templates-v2.json",
+        "ko-jp-v2": "ko-jp_templates-v2.json",
+        "ko-zh-v2": "ko-zh_templates-v2.json",
     }
     
     if language not in template_map:

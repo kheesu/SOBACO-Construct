@@ -8,16 +8,16 @@ import pandas as pd
 from pathlib import Path
 
 def parse_mapping_file(mapping_file):
-    """Parse mapping file with sections like --- FIELD_NAME ---."""
+    """Parse mapping file with sections. Supports both --- FIELD --- and plain FIELD formats."""
     
     sections = {}
     current_section = None
     
-    with open(mapping_file, 'r', encoding='utf-8') as f:
+    with open(mapping_file, 'r', encoding='utf-8') as f: 
         for line in f:
             line = line.strip()
             
-            # Check for section header (may have content after ---, like "--- CONTEXT ---\t한국어 번역")
+            # Check for section header with --- delimiters
             if line.startswith('---') and '---' in line[3:]:
                 # Extract section name between the --- markers
                 end_marker = line.index('---', 3) + 3
@@ -37,12 +37,41 @@ def parse_mapping_file(mapping_file):
                     normalized = 'additional_context_culture'
                 current_section = normalized
                 sections[current_section] = []
+            # Check for plain section header (no ---, just text followed by tab or end of line)
+            # This must come AFTER checking for translation pairs to avoid false positives
             elif line and '\t' in line and current_section:
                 # Parse translation pair
                 parts = line.split('\t', 1)
                 if len(parts) == 2 and not line.startswith('---'):
-                    # Skip lines that look like headers (e.g., "source\ttarget" column names)
-                    sections[current_section].append((parts[0], parts[1]))
+                    # Skip header rows like "Korean\tJapanese"
+                    if parts[0].lower() not in ['korean', 'japanese', 'source', 'target', 'chinese', 'english']:
+                        sections[current_section].append((parts[0], parts[1]))
+            elif line and len(line) > 0:
+                # Extract text before any tab (header might have trailing tab)
+                header_text = line.split('\t')[0] if '\t' in line else line
+                # Check if it's an ASCII uppercase header (not CJK text)
+                is_ascii = all(ord(c) < 128 or c in ' -_' for c in header_text)
+                is_uppercase = header_text.upper() == header_text
+                has_lowercase = any(c.islower() for c in header_text)
+                
+                if is_ascii and is_uppercase and not has_lowercase and header_text.strip():
+                    # This is a section header
+                    section_text = header_text.strip()
+                    normalized = section_text.lower().replace(' ', '_').replace('-', '_')
+                    # Handle common variations
+                    if normalized == 'contexts':
+                        normalized = 'context'
+                    elif normalized == 'questions':
+                        normalized = 'question'
+                    elif normalized == 'parameters':
+                        normalized = 'param'
+                    elif 'additional' in normalized and 'context' in normalized:
+                        if 'bias' in normalized:
+                            normalized = 'additional_context_bias'
+                        elif 'culture' in normalized:
+                            normalized = 'additional_context_culture'
+                    current_section = normalized
+                    sections[current_section] = []
     
     # Sort each section's replacements by length (longest first)
     for section in sections:
@@ -52,6 +81,8 @@ def parse_mapping_file(mapping_file):
 
 def translate_json_file(data, sections):
     """Translate JSON data using field-specific mappings."""
+    
+    import uuid
     
     total_replacements = 0
     
@@ -65,21 +96,49 @@ def translate_json_file(data, sections):
                 # Handle list fields (like param)
                 if isinstance(original_value, list):
                     for i, item in enumerate(original_value):
+                        # Use placeholder strategy to prevent partial re-replacement
+                        temp_text = item
+                        replacement_map = {}
+                        
                         for source, target in replacements:
-                            if source in item:
-                                template[field_name][i] = item.replace(source, target)
+                            if source in temp_text:
+                                # Create unique placeholder
+                                placeholder = f"__PLACEHOLDER_{uuid.uuid4().hex}__"
+                                replacement_map[placeholder] = target
+                                temp_text = temp_text.replace(source, placeholder)
                                 total_replacements += 1
+                        
+                        # Replace all placeholders with actual targets
+                        for placeholder, target in replacement_map.items():
+                            temp_text = temp_text.replace(placeholder, target)
+                        
+                        template[field_name][i] = temp_text
+                        
                 # Handle string fields
                 elif isinstance(original_value, str):
+                    temp_text = original_value
+                    replacement_map = {}
+                    
                     for source, target in replacements:
-                        if source in original_value:
-                            template[field_name] = template[field_name].replace(source, target)
+                        if source in temp_text:
+                            # Create unique placeholder
+                            placeholder = f"__PLACEHOLDER_{uuid.uuid4().hex}__"
+                            replacement_map[placeholder] = target
+                            temp_text = temp_text.replace(source, placeholder)
                             total_replacements += 1
+                    
+                    # Replace all placeholders with actual targets
+                    for placeholder, target in replacement_map.items():
+                        temp_text = temp_text.replace(placeholder, target)
+                    
+                    template[field_name] = temp_text
     
     return data, total_replacements
 
 def translate_csv_file(df, sections):
     """Translate CSV data by applying section-specific replacements to matching columns."""
+    
+    import uuid
     
     total_replacements = 0
     section_counts = {}
@@ -108,14 +167,28 @@ def translate_csv_file(df, sections):
         # Apply replacements to target columns only
         for col in target_columns:
             if col in df.columns and df[col].dtype == 'object':
-                for source, target in replacements:
-                    # Count replacements in this column
-                    mask = df[col].str.contains(source, regex=False, na=False)
-                    count = mask.sum()
-                    if count > 0:
-                        df[col] = df[col].str.replace(source, target, regex=False)
-                        total_replacements += count
-                        section_counts[section_name] += count
+                # Process each row
+                for idx in df.index:
+                    if pd.isna(df.at[idx, col]):
+                        continue
+                    
+                    temp_text = df.at[idx, col]
+                    replacement_map = {}
+                    
+                    for source, target in replacements:
+                        if source in temp_text:
+                            # Create unique placeholder
+                            placeholder = f"__PLACEHOLDER_{uuid.uuid4().hex}__"
+                            replacement_map[placeholder] = target
+                            temp_text = temp_text.replace(source, placeholder)
+                            total_replacements += 1
+                            section_counts[section_name] += 1
+                    
+                    # Replace all placeholders with actual targets
+                    for placeholder, target in replacement_map.items():
+                        temp_text = temp_text.replace(placeholder, target)
+                    
+                    df.at[idx, col] = temp_text
     
     return df, total_replacements, section_counts
 

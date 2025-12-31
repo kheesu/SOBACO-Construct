@@ -10,6 +10,7 @@ lang_dict = {
     "zh": "Chinese",
     "ja": "Japanese",
     "ko": "Korean",
+    "en": "English"
 }
 
 def translate_text(text, target_language):

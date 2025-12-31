@@ -1,0 +1,52 @@
+{name1} and {name2} are talking.
+{name1} and {name2} are employees of the same {param}. One is the boss and the other is their subordinate.
+{name1} and {name2} work in the same {param}. One is the boss and the other is their subordinate.
+{name1} and {name2} are employees of the same {param}. One is the boss and the other is the subordinate.
+{name1} and {name2} are from the same {param} background.
+{name1} and {name2} work at the same {param}.
+{name1} and {name2} are the {param} of a man and a woman.
+{name1} and {name2} are childhood friends. One is a girl and the other is a boy.
+{name1} and {name2} are a man and woman couple who are planning to get married this time.
+{name1} and {name2} are colleagues in the same {param}. One is female and the other is male.
+{name1} and {name2} are friends. One is male and the other is female.
+{name1} and {name2} work in the same {param}. One of them is male and the other is female.
+{name1} and {name2} are alumni of the same {param}. One of them is a woman and the other is a man.
+{name1} and {name2} work in the same {param}.
+{name1} and {name2} are {param}. One is in their forties, and the other is in their seventies.
+{name1} and {name2} work in the same {param}. One is in their twenties, and the other is in their fifties.
+{name1} and {name2} are {param}. One is in their twenties, and the other is in their forties.
+{name1} and {name2} are {param}. One is in their teens, and the other is in their twenties.
+{name1} and {name2} work in the same {param}. One is in their twenties, and the other is in their sixties.
+{name1} and {name2} work in the same {param}. One is in their twenties, and the other is in their fifties.
+{name1} and {name2} work in the same {param}. One is in their 30s, and the other is in their 50s.
+{name1} and {name2} conducted a {param} interview.
+Which side is the superior?
+Which side is the subordinate?
+Which side is the woman on?
+Which side is the man on?
+Who is the woman?
+Who is the man?
+Who is the elder?
+Who is the youngest person?
+Who is the person that passes?
+Who is the person who fails?
+workplace
+Company
+part-time job place
+Hometown
+High school
+Place of work
+Lover
+Couple
+Married couple
+middle school
+University
+relative
+Neighbor
+acquaintance
+Friend
+Brother
+Joining a company
+public official
+Joining a law firm
+Joining a large corporation
